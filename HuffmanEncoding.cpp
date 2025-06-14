@@ -156,31 +156,18 @@ void encodeFile(istream& infile, Node* encodingTree, obstream& outfile) {
  *     this encoding table.
  *
  *   - The output file is open and ready for writing.
- * 
- * I think our program should assume that empty file is not
- * passed to decode but I still added check for it
  */
 void decodeFile(ibstream& infile, Node* encodingTree, ostream& file) {
-	// we check if there is only one (PSEUDO_EOF) node 
-	if (encodingTree->character == PSEUDO_EOF) {
-		error("File is empty");
-		return;
-	}
 	Node* curr = encodingTree;
 	while (true) {
-		bool bit = infile.readBit();
-		if (bit) {
-			curr = curr->one;
-		}
-		else {
-			curr = curr->zero;
-		}
 		if (!curr->zero && !curr->one) {
-			ext_char ch = curr->character;
-			if (ch == PSEUDO_EOF)break;
-			file.put(ch);
+			if (curr->character == PSEUDO_EOF) break;
+			file.put(curr->character);
 			curr = encodingTree;
+			continue;
 		}
+		bool bit = infile.readBit();
+		curr = bit ? curr->one : curr->zero;
 	}
 }
 
